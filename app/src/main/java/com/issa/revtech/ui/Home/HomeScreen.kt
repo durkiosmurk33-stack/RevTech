@@ -22,6 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.issa.revtech.navigation.ROUT_FUEL
+import com.issa.revtech.navigation.ROUT_MAINTENANCE
+import com.issa.revtech.navigation.ROUT_HISTORY
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,21 +94,21 @@ fun HomeScreen(navController: NavController) {
                 title = "Add Fuel",
                 subtitle = "Log refuel",
                 icon = Icons.Default.LocalGasStation,
-                onClick = { navController.navigate("fuel") }
+                onClick = { navController.navigate(ROUT_FUEL) }
             )
 
             ActionItem(
                 title = "Maintenance",
                 subtitle = "Service record",
                 icon = Icons.Default.Build,
-                onClick = { navController.navigate("maintenance") }
+                onClick = { navController.navigate(ROUT_MAINTENANCE) }
             )
 
             ActionItem(
                 title = "Ride History",
                 subtitle = "Trips log",
                 icon = Icons.Default.DirectionsBike,
-                onClick = { }
+                onClick = { navController.navigate(ROUT_HISTORY) }
             )
 
             Text("Alerts", fontWeight = FontWeight.Medium, fontSize = 14.sp)
