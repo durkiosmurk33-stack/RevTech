@@ -25,58 +25,92 @@ import androidx.navigation.compose.rememberNavController
 import com.issa.revtech.navigation.ROUT_FUEL
 import com.issa.revtech.navigation.ROUT_MAINTENANCE
 import com.issa.revtech.navigation.ROUT_HISTORY
+import com.issa.revtech.navigation.ROUT_PROFILE
+
+private val RacingOrange = Color(0xFFFF6D00)
+private val RacingBackground = Color(0xFF101114)
+private val RacingCard = Color(0xFF1B1D22)
+private val RacingMuted = Color(0xFF9EA3AD)
+private val RacingWhite = Color(0xFFF5F5F5)
+private val RacingGreen = Color(0xFF39C875)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
-
     val scrollState = rememberScrollState()
 
     Scaffold(
+        containerColor = RacingBackground,
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Revtech Dashboard", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    Column {
+                        Text(
+                            "REVTECH",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black,
+                            color = RacingWhite,
+                            letterSpacing = 2.sp
+                        )
+                        Text(
+                            "RIDER DASHBOARD",
+                            fontSize = 10.sp,
+                            color = RacingMuted,
+                            letterSpacing = 1.5.sp
+                        )
+                    }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
-                    }
+                    Icon(
+                        Icons.Default.TwoWheeler,
+                        contentDescription = "Motorcycle",
+                        tint = RacingOrange,
+                        modifier = Modifier.padding(start = 16.dp, end = 10.dp)
+                    )
                 },
                 actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.Notifications, contentDescription = null)
+                    IconButton(onClick = {}) {
+                        Icon(
+                            Icons.Default.NotificationsNone,
+                            contentDescription = "Notifications",
+                            tint = RacingWhite
+                        )
                     }
-
                     Box(
                         modifier = Modifier
-                            .size(34.dp)
+                            .padding(end = 12.dp)
+                            .size(38.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                            .clickable { navController.navigate("profile") },
+                            .background(RacingOrange)
+                            .clickable {
+                                navController.navigate(ROUT_PROFILE)
+                            },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("A", fontWeight = FontWeight.Bold)
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "Open profile",
+                            tint = Color.Black
+                        )
                     }
-
-                    Spacer(Modifier.width(8.dp))
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = RacingBackground
+                )
             )
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(scrollState)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-
             BikeStatusCard()
 
-            Text("Live Stats", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+            SectionHeading("RIDE OVERVIEW", "YOUR MACHINE")
 
             FuelProgressCard(progress = 0.65f)
 
@@ -88,238 +122,396 @@ fun HomeScreen(navController: NavController) {
                 StatBox("KES 1,150", "Cost", Modifier.weight(1f))
             }
 
-            Text("Quick Actions", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+            SectionHeading("QUICK ACCESS", "YOUR SHORTCUTS")
 
-            ActionItem(
-                title = "Add Fuel",
-                subtitle = "Log refuel",
-                icon = Icons.Default.LocalGasStation,
-                onClick = { navController.navigate(ROUT_FUEL) }
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ActionTile(
+                    title = "Music",
+                    subtitle = "Coming soon",
+                    icon = Icons.Default.MusicNote,
+                    modifier = Modifier.weight(1f),
+                    onClick = {}
+                )
+                ActionTile(
+                    title = "Routes",
+                    subtitle = "Coming soon",
+                    icon = Icons.Default.Map,
+                    modifier = Modifier.weight(1f),
+                    onClick = {}
+                )
+            }
 
-            ActionItem(
-                title = "Maintenance",
-                subtitle = "Service record",
-                icon = Icons.Default.Build,
-                onClick = { navController.navigate(ROUT_MAINTENANCE) }
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ActionTile(
+                    title = "Maintenance",
+                    subtitle = "Bike care",
+                    icon = Icons.Default.Build,
+                    modifier = Modifier.weight(1f),
+                    onClick = { navController.navigate(ROUT_MAINTENANCE) }
+                )
+                ActionTile(
+                    title = "Ride History",
+                    subtitle = "Past records",
+                    icon = Icons.Default.History,
+                    modifier = Modifier.weight(1f),
+                    onClick = { navController.navigate(ROUT_HISTORY) }
+                )
+            }
 
-            ActionItem(
-                title = "Ride History",
-                subtitle = "Trips log",
-                icon = Icons.Default.DirectionsBike,
-                onClick = { navController.navigate(ROUT_HISTORY) }
-            )
-
-            Text("Alerts", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+            SectionHeading("BIKE STATUS", "STAY ROAD-READY")
 
             AlertCard(
                 title = "Chain Check",
                 message = "Needs lubrication soon",
                 icon = Icons.Default.Warning
             )
+
+            OutlinedButton(
+                onClick = { navController.navigate(ROUT_FUEL) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = RacingOrange
+                )
+            ) {
+                Icon(Icons.Default.LocalGasStation, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("HACKENSACK")
+            }
+
+            Spacer(Modifier.height(8.dp))
         }
     }
 }
 
-/* -------------------- BIKE STATUS -------------------- */
+@Composable
+private fun SectionHeading(title: String, subtitle: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Text(
+            subtitle,
+            fontSize = 10.sp,
+            color = RacingOrange,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.5.sp
+        )
+        Text(
+            title,
+            fontSize = 16.sp,
+            color = RacingWhite,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp
+        )
+    }
+}
 
 @Composable
 fun BikeStatusCard() {
     Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(20.dp),
+        color = RacingCard,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(Modifier.padding(16.dp)) {
-
+        Column(Modifier.padding(18.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column {
-                    Text("Arya", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Jincheng 550cc • Active",
+                        "YOUR RIDE",
+                        fontSize = 10.sp,
+                        color = RacingOrange,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
+                    Spacer(Modifier.height(5.dp))
+                    Text(
+                        "Arya",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        color = RacingWhite
+                    )
+                    Text(
+                        "Jincheng 550cc",
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = RacingMuted
                     )
                 }
 
-                StatusChip("GOOD")
+                Box(
+                    modifier = Modifier
+                        .size(66.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF302116)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.TwoWheeler,
+                        contentDescription = "Arya motorcycle",
+                        tint = RacingOrange,
+                        modifier = Modifier.size(38.dp)
+                    )
+                }
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(18.dp))
+            HorizontalDivider(color = Color(0xFF34363D))
+            Spacer(Modifier.height(14.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("Last Service", fontSize = 11.sp)
-                    Text("12 Aug 2025", fontWeight = FontWeight.Medium)
+                    Text("LAST SERVICE", fontSize = 9.sp, color = RacingMuted)
+                    Text(
+                        "12 Aug 2025",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = RacingWhite
+                    )
                 }
-
-                Column {
-                    Text("Mileage", fontSize = 11.sp)
-                    Text("128 km", fontWeight = FontWeight.Medium)
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("RECORDED DISTANCE", fontSize = 9.sp, color = RacingMuted)
+                    Text(
+                        "128 km",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = RacingWhite
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(Color(0xFF173A2A))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        "ACTIVE",
+                        color = RacingGreen,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
     }
 }
-
-/* -------------------- FUEL PROGRESS -------------------- */
 
 @Composable
 fun FuelProgressCard(progress: Float) {
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = RacingCard,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.LocalGasStation,
+                        contentDescription = null,
+                        tint = RacingOrange
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Fuel Overview",
+                        color = RacingWhite,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Text(
+                    "${(progress * 100).toInt()}%",
+                    color = RacingOrange,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-            Text("Fuel Level", fontWeight = FontWeight.Medium)
-
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
             LinearProgressIndicator(
-                progress = progress,
+                progress = { progress.coerceIn(0f, 1f) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)
-                    .clip(RoundedCornerShape(50))
+                    .clip(RoundedCornerShape(50)),
+                color = RacingOrange,
+                trackColor = Color(0xFF36383E)
             )
 
-            Spacer(Modifier.height(6.dp))
-
+            Spacer(Modifier.height(8.dp))
             Text(
-                "${(progress * 100).toInt()}% remaining",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                "Estimated fuel remaining",
+                fontSize = 11.sp,
+                color = RacingMuted
             )
         }
     }
 }
-
-/* -------------------- SERVICE COUNTDOWN -------------------- */
 
 @Composable
 fun ServiceCountdownCard(kmLeft: Int) {
     Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.primaryContainer,
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFF302116),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF4A2A12)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Build,
+                    contentDescription = null,
+                    tint = RacingOrange
+                )
+            }
 
-            Text("Service Reminder", fontWeight = FontWeight.Medium)
+            Spacer(Modifier.width(12.dp))
 
-            Spacer(Modifier.height(4.dp))
-
-            Text(
-                "$kmLeft km left until next service",
-                fontSize = 13.sp
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "SERVICE REMINDER",
+                    fontSize = 10.sp,
+                    color = RacingOrange,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "$kmLeft km until next service",
+                    color = RacingWhite,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp
+                )
+            }
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = RacingOrange
             )
         }
     }
 }
-
-/* -------------------- STATUS CHIP -------------------- */
-
-@Composable
-fun StatusChip(text: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(Color(0xFF2E7D32))
-            .padding(horizontal = 10.dp, vertical = 4.dp)
-    ) {
-        Text(text, color = Color.White, fontSize = 11.sp)
-    }
-}
-
-/* -------------------- STATS -------------------- */
 
 @Composable
 fun StatBox(value: String, label: String, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
-        color = MaterialTheme.colorScheme.surface
+        shape = RoundedCornerShape(14.dp),
+        color = RacingCard
     ) {
         Column(
-            Modifier.padding(12.dp),
+            modifier = Modifier.padding(vertical = 14.dp, horizontal = 5.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(value, fontWeight = FontWeight.Bold)
-            Text(label, fontSize = 11.sp)
+            Text(
+                value,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                color = RacingWhite
+            )
+            Spacer(Modifier.height(5.dp))
+            Text(
+                label,
+                fontSize = 10.sp,
+                color = RacingMuted
+            )
         }
     }
 }
 
-/* -------------------- ACTION ITEM -------------------- */
-
 @Composable
-fun ActionItem(
+private fun ActionTile(
     title: String,
     subtitle: String,
     icon: ImageVector,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Surface(
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
+        modifier = modifier
+            .height(116.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        color = RacingCard
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(11.dp))
+                    .background(Color(0xFF302116)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = title,
+                    tint = RacingOrange
+                )
+            }
+
+            Column {
+                Text(
+                    title,
+                    fontSize = 13.sp,
+                    color = RacingWhite,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    subtitle,
+                    fontSize = 10.sp,
+                    color = RacingMuted
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AlertCard(title: String, message: String, icon: ImageVector) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = RacingCard,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = null)
-
+            Icon(icon, contentDescription = null, tint = RacingOrange)
             Spacer(Modifier.width(12.dp))
-
-            Column(Modifier.weight(1f)) {
-                Text(title, fontWeight = FontWeight.Medium)
-                Text(subtitle, fontSize = 12.sp)
-            }
-
-            Icon(Icons.Default.ChevronRight, contentDescription = null)
-        }
-    }
-}
-
-/* -------------------- ALERT -------------------- */
-
-@Composable
-fun AlertCard(title: String, message: String, icon: ImageVector) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.errorContainer,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(icon, contentDescription = null)
-
-            Spacer(Modifier.width(10.dp))
-
             Column {
-                Text(title, fontWeight = FontWeight.Medium)
-                Text(message, fontSize = 12.sp)
+                Text(
+                    title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = RacingWhite
+                )
+                Spacer(Modifier.height(3.dp))
+                Text(message, fontSize = 11.sp, color = RacingMuted)
             }
         }
     }
 }
 
-/* -------------------- PREVIEW -------------------- */
-
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFF101114)
 @Composable
 fun HomeScreenPreview() {
     HomeScreen(navController = rememberNavController())

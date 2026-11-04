@@ -1,17 +1,33 @@
 package com.issa.revtech.ui.auth
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.issa.revtech.navigation.ROUT_REGISTER
+
+private val ChuckyRed = Color(0xFFFF3030)
+private val ChuckyBlack = Color(0xFF101012)
+private val ChuckyCard = Color(0xFF1C1C21)
+private val ChuckyMuted = Color(0xFFAAAAAF)
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -21,92 +37,232 @@ fun LoginScreen(navController: NavController) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
 
+    val fieldColors = TextFieldDefaults.colors(
+        focusedContainerColor = ChuckyCard,
+        unfocusedContainerColor = ChuckyCard,
+        focusedTextColor = Color.White,
+        unfocusedTextColor = Color.White,
+        focusedLabelColor = ChuckyRed,
+        unfocusedLabelColor = ChuckyMuted,
+        cursorColor = ChuckyRed,
+        focusedIndicatorColor = ChuckyRed,
+        unfocusedIndicatorColor = Color.Transparent
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(ChuckyBlack)
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center
     ) {
 
         Text(
-            text = "Login",
-            style = MaterialTheme.typography.headlineMedium
+            text = "CHUCKY // NAV",
+            color = ChuckyRed,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = 3.sp
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
-        TextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+        Text(
+            text = "WELCOME\nBACK.",
+            color = Color.White,
+            fontSize = 36.sp,
+            lineHeight = 42.sp,
+            fontWeight = FontWeight.Black
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+        Text(
+            text = "Sign in and get back on the road.",
+            color = ChuckyMuted,
+            fontSize = 16.sp
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
-        if (errorMessage != null) {
+        // Login form card
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = ChuckyCard,
+                    shape = RoundedCornerShape(24.dp)
+                )
+                .padding(20.dp)
+        ) {
+
             Text(
-                text = errorMessage!!,
-                color = MaterialTheme.colorScheme.error
+                text = "RIDER ACCESS",
+                color = ChuckyRed,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
-        }
-        TextButton(onClick = {
-            navController.navigate(ROUT_REGISTER)
-        }) {
-            Text("Don't have an account? Register")
-        }
+            Spacer(modifier = Modifier.height(22.dp))
 
+            Text(
+                text = "Email address",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
 
-        Button(
-            onClick = {
+            Spacer(modifier = Modifier.height(8.dp))
 
+            TextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    errorMessage = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Enter your email") },
+                singleLine = true,
+                shape = RoundedCornerShape(14.dp),
+                colors = fieldColors,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                )
+            )
 
-                Log.e("LOGIN_FLOW", "BUTTON CLICKED")
+            Spacer(modifier = Modifier.height(20.dp))
 
-                if (email.isBlank() || password.isBlank()) {
-                    errorMessage = "Email or password cannot be empty"
-                    return@Button
-                }
+            Text(
+                text = "Password",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
 
-                loading = true
+            Spacer(modifier = Modifier.height(8.dp))
 
-                FirebaseAuth.getInstance()
-                    .signInWithEmailAndPassword(email.trim(), password.trim())
-                    .addOnCompleteListener { task ->
+            TextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                    errorMessage = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Enter your password") },
+                singleLine = true,
+                shape = RoundedCornerShape(14.dp),
+                visualTransformation = PasswordVisualTransformation(),
+                colors = fieldColors,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                )
+            )
 
-                        loading = false
+            if (errorMessage != null) {
+                Spacer(modifier = Modifier.height(14.dp))
 
-                        if (task.isSuccessful) {
-                            Log.e("LOGIN_FLOW", "LOGIN SUCCESS")
+                Text(
+                    text = errorMessage!!,
+                    color = ChuckyRed,
+                    fontSize = 13.sp
+                )
+            }
 
-                            navController.navigate("home")
+            Spacer(modifier = Modifier.height(24.dp))
 
-                        } else {
-                            val error = task.exception?.message
-                            Log.e("LOGIN_FLOW", "LOGIN FAILED: $error")
-
-                            errorMessage = error
-                        }
+            Button(
+                onClick = {
+                    if (email.isBlank() || password.isBlank()) {
+                        errorMessage = "Enter your email and password."
+                        return@Button
                     }
 
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Login")
+                    loading = true
+                    errorMessage = null
 
+                    FirebaseAuth.getInstance()
+                        .signInWithEmailAndPassword(
+                            email.trim(),
+                            password
+                        )
+                        .addOnCompleteListener { task ->
+                            loading = false
+
+                            if (task.isSuccessful) {
+                                Log.d("LOGIN_FLOW", "LOGIN SUCCESS")
+
+                                navController.navigate("home")
+                            } else {
+                                Log.e(
+                                    "LOGIN_FLOW",
+                                    "LOGIN FAILED",
+                                    task.exception
+                                )
+
+                                errorMessage =
+                                    task.exception?.localizedMessage
+                                        ?: "Login failed. Please try again."
+                            }
+                        }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                enabled = !loading,
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ChuckyRed,
+                    contentColor = Color.White
+                )
+            ) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "LET'S RIDE  →",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            TextButton(
+                onClick = {
+                    navController.navigate(ROUT_REGISTER)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "New rider? Create an account",
+                    color = ChuckyMuted,
+                    fontSize = 13.sp
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "REVTECH  •  RIDE YOUR OWN WAY",
+            modifier = Modifier.fillMaxWidth(),
+            color = Color.Gray,
+            fontSize = 11.sp,
+            letterSpacing = 1.sp,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
     }
 }
 

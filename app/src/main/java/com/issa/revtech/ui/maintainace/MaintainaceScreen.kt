@@ -1,170 +1,417 @@
 package com.issa.revtech.ui.maintainance
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.LocalCafe
+import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.LocalParking
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.compose.ui.tooling.preview.Preview
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.compose.foundation.clickable
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+
+private val ChuckyRed = Color(0xFFFF3030)
+private val ChuckyBlack = Color(0xFF101012)
+private val ChuckyCard = Color(0xFF1C1C21)
+private val ChuckyMuted = Color(0xFFAAAAAF)
 
 @Composable
 fun MaintenanceScreen(navController: NavController) {
 
-    val db = FirebaseFirestore.getInstance()
-    val user = FirebaseAuth.getInstance().currentUser
+    val context = LocalContext.current
 
-    var serviceType by remember { mutableStateOf("") }
-    var cost by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }      // ✅ FIX 1: was imported from android.R.id instead of declared as state
-    var isError by remember { mutableStateOf(false) }   // ✅ FIX 2: track error vs success
-    var isLoading by remember { mutableStateOf(false) }
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
 
-    // ✅ FIX 3: guard against unauthenticated access
-    if (user == null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("You must be logged in.", color = MaterialTheme.colorScheme.error)
+    var gpsActive by remember {
+        mutableStateOf(false)
+    }
+
+    val locationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+
+            hasLocationPermission =
+                permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+
+            if (!hasLocationPermission) {
+                gpsActive = false
+            }
         }
-        return
+
+    var selectedDirective by remember {
+        mutableStateOf("NONE")
+    }
+
+    val mapView = remember {
+        Configuration.getInstance().userAgentValue = context.packageName
+
+        MapView(context).apply {
+            setTileSource(TileSourceFactory.MAPNIK)
+            setMultiTouchControls(true)
+            setBuiltInZoomControls(false)
+
+            controller.setZoom(13.0)
+            controller.setCenter(
+                GeoPoint(-1.286389, 36.817223)
+            )
+        }
+    }
+    val locationOverlay = remember(mapView) {
+        MyLocationNewOverlay(
+            GpsMyLocationProvider(context),
+            mapView
+        )
+    }
+    DisposableEffect(mapView, hasLocationPermission) {
+
+        if (hasLocationPermission) {
+
+            mapView.overlays.add(locationOverlay)
+
+            locationOverlay.enableMyLocation()
+
+            locationOverlay.runOnFirstFix {
+                mapView.post {
+                    locationOverlay.myLocation?.let { location ->
+                        mapView.controller.animateTo(location)
+                        gpsActive = true
+                    }
+                }
+            }
+        }
+
+        onDispose {
+            locationOverlay.disableMyLocation()
+            mapView.overlays.remove(locationOverlay)
+            gpsActive = false
+        }
+    }
+
+    DisposableEffect(mapView) {
+        mapView.onResume()
+
+        onDispose {
+            mapView.onPause()
+            mapView.onDetach()
+        }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(ChuckyBlack)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 12.dp)
+            .padding(top = 8.dp, bottom = 8.dp)
     ) {
 
-        Text(
-            text = "Maintenance Tracker",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = serviceType,
-            onValueChange = { serviceType = it },
-            label = { Text("Service Type (e.g Oil change)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        OutlinedTextField(
-            value = cost,
-            onValueChange = { cost = it },
-            label = { Text("Cost (Ksh)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal) // ✅ FIX 4: numeric keyboard for cost
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        OutlinedTextField(
-            value = notes,
-            onValueChange = { notes = it },
-            label = { Text("Notes (optional)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                message = ""
-                isError = false
-
-                // ✅ FIX 5: was using undefined variable "service" — correct name is "serviceType"
-                if (serviceType.isBlank() || cost.isBlank()) {
-                    message = "Please fill all fields"
-                    isError = true
-                    return@Button
-                }
-
-                // ✅ FIX 6: validate cost is a real number before saving
-                val costDouble = cost.toDoubleOrNull()
-                if (costDouble == null) {
-                    message = "Cost must be a valid number"
-                    isError = true
-                    return@Button
-                }
-
-                isLoading = true
-
-                val maintenanceData = hashMapOf(
-                    "serviceType" to serviceType,       // ✅ FIX 5: was "service" which doesn't exist
-                    "cost" to costDouble,               // ✅ FIX 6: stored as Double not String
-                    "notes" to notes,
-                    "userId" to user.uid,               // ✅ FIX 7: safe — user is non-null here
-                    "timestamp" to System.currentTimeMillis()
+        // HEADER
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    ChuckyCard,
+                    RoundedCornerShape(14.dp)
                 )
-
-                db.collection("maintenance_logs")
-                    .add(maintenanceData)
-                    .addOnSuccessListener {
-                        isLoading = false
-                        isError = false
-                        message = "Maintenance saved successfully"
-                        serviceType = ""                // ✅ FIX 5: was resetting "service" which doesn't exist
-                        cost = ""
-                        notes = ""
-                    }
-                    .addOnFailureListener { e ->
-                        isLoading = false
-                        isError = true
-                        message = e.message ?: "Failed to save data"  // ✅ FIX 8: show real error
-                    }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.onPrimary
+
+            Column {
+                Text(
+                    "CHUCKY // NAV",
+                    color = ChuckyRed,
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Bold
                 )
-            } else {
-                Text("Save Maintenance")
+
+                Text(
+                    "WHERE TO, DOLL?",
+                    color = ChuckyMuted,
+                    fontSize = 10.sp,
+                    letterSpacing = 2.sp
+                )
             }
+
+            Text(
+                text = when {
+                    gpsActive -> "GPS ACTIVE"
+                    hasLocationPermission -> "LOCATING..."
+                    else -> "GPS OFF"
+                },
+                color = if (gpsActive) Color(0xFF39C875) else ChuckyRed,
+                fontSize = 11.sp,
+                modifier = Modifier
+                    .background(
+                        ChuckyBlack,
+                        RoundedCornerShape(8.dp)
+                    )
+                    .clickable {
+                        if (!hasLocationPermission) {
+                            locationPermissionLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                )
+                            )
+                        }
+                    }
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            )
+
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // ✅ FIX 9: message was never displayed
-        if (message.isNotEmpty()) {
+        // MAP FRAME
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(18.dp))
+                .border(
+                    width = 1.dp,
+                    color = ChuckyRed.copy(alpha = 0.7f),
+                    shape = RoundedCornerShape(18.dp)
+                )
+        ) {
+
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { mapView }
+            )
+            Button(
+                onClick = {
+                    locationOverlay.myLocation?.let { location ->
+                        mapView.controller.animateTo(location)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ChuckyBlack,
+                    contentColor = ChuckyRed
+                ),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(12.dp)
+            ) {
+                Text("⌖ RECENTER")
+            }
+
             Text(
-                text = message,
-                color = if (isError) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.primary
+                "OPENSTREETMAP • NAIROBI",
+                color = Color.White,
+                fontSize = 10.sp,
+                letterSpacing = 1.sp,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(12.dp)
+                    .background(
+                        ChuckyBlack.copy(alpha = 0.9f),
+                        RoundedCornerShape(8.dp)
+                    )
+                    .padding(
+                        horizontal = 12.dp,
+                        vertical = 9.dp
+                    )
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // DIRECTIVE PANEL
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    ChuckyCard,
+                    RoundedCornerShape(14.dp)
+                )
+                .padding(vertical = 10.dp)
+        ) {
+
+            Text(
+                "QUICK DIRECTIVES",
+                color = ChuckyMuted,
+                fontSize = 10.sp,
+                letterSpacing = 2.sp,
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    bottom = 6.dp
+                )
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+
+                DirectiveButton(
+                    title = "FUEL",
+                    selected = selectedDirective == "FUEL",
+                    onClick = { selectedDirective = "FUEL" }
+                ) {
+                    Icon(
+                        Icons.Default.LocalGasStation,
+                        contentDescription = "Fuel"
+                    )
+                }
+
+                DirectiveButton(
+                    title = "REPAIR",
+                    selected = selectedDirective == "REPAIR",
+                    onClick = { selectedDirective = "REPAIR" }
+                ) {
+                    Icon(
+                        Icons.Default.Build,
+                        contentDescription = "Repair"
+                    )
+                }
+
+                DirectiveButton(
+                    title = "PARK",
+                    selected = selectedDirective == "PARK",
+                    onClick = { selectedDirective = "PARK" }
+                ) {
+                    Icon(
+                        Icons.Default.LocalParking,
+                        contentDescription = "Parking"
+                    )
+                }
+
+                DirectiveButton(
+                    title = "REST",
+                    selected = selectedDirective == "REST",
+                    onClick = { selectedDirective = "REST" }
+                ) {
+                    Icon(
+                        Icons.Default.LocalCafe,
+                        contentDescription = "Rest"
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // BOTTOM STATUS
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    ChuckyCard,
+                    RoundedCornerShape(14.dp)
+                )
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Column {
+                Text(
+                    if (selectedDirective == "NONE")
+                        "MAP READY"
+                    else
+                        "$selectedDirective SELECTED",
+                    color = ChuckyRed,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    if (selectedDirective == "NONE")
+                        "GPS navigation coming next"
+                    else
+                        "Location filtering coming next",
+                    color = ChuckyMuted,
+                    fontSize = 10.sp
+                )
+            }
+
+            Text(
+                "CHUCKY",
+                color = ChuckyMuted,
+                fontSize = 12.sp,
+                letterSpacing = 2.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun DirectiveButton(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit
+) {
+    val iconColor = if (selected) ChuckyRed else ChuckyMuted
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(72.dp)
+    ) {
+
+        IconButton(onClick = onClick) {
+            CompositionLocalProvider(
+                LocalContentColor provides iconColor
+            ) {
+                icon()
+            }
+        }
 
         Text(
-            text = "Recent Maintenance",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "No records yet",
-            style = MaterialTheme.typography.bodyMedium
+            title,
+            color = if (selected) ChuckyRed else ChuckyMuted,
+            fontSize = 10.sp,
+            fontWeight = if (selected)
+                FontWeight.Bold
+            else
+                FontWeight.Normal
         )
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MaintenanceScreenPreview() {
-    MaintenanceScreen(rememberNavController())
+    MaintenanceScreen(
+        navController = rememberNavController()
+    )
 }

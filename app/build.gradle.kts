@@ -42,6 +42,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.runtime)
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.foundation:foundation-layout")
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
@@ -66,4 +69,7 @@ dependencies {
 
     // Material Icons Extended
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Map Component
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
 }
