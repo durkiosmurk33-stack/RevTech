@@ -143,9 +143,9 @@ fun HomeScreen(navController: NavController) {
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ActionTile(
-                    title = "Maintenance",
-                    subtitle = "Bike care",
-                    icon = Icons.Default.Build,
+                    title = "Map View",
+                    subtitle = "Don't get lost",
+                    icon = Icons.Default.Map,
                     modifier = Modifier.weight(1f),
                     onClick = { navController.navigate(ROUT_MAINTENANCE) }
                 )
@@ -174,9 +174,9 @@ fun HomeScreen(navController: NavController) {
                     contentColor = RacingOrange
                 )
             ) {
-                Icon(Icons.Default.LocalGasStation, contentDescription = null)
+                Icon(Icons.Default.LibraryMusic, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("HACKENSACK")
+                Text("MUSIC")
             }
 
             Spacer(Modifier.height(8.dp))
@@ -321,7 +321,7 @@ fun FuelProgressCard(progress: Float) {
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Fuel Overview",
+                        " Minimum Fuel Overview",
                         color = RacingWhite,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -384,7 +384,7 @@ fun ServiceCountdownCard(kmLeft: Int) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "SERVICE REMINDER",
+                    "UPDATED COMING FEATURE",
                     fontSize = 10.sp,
                     color = RacingOrange,
                     fontWeight = FontWeight.Bold,

@@ -98,7 +98,7 @@ fun OnBoardingScreen3(navController: NavController) {
             )
 
             Text(
-                text = "AM FUCKING INFAMOUS!",
+                text = " I AM INFAMOUS!",
                 color = ChuckyRed,
                 fontSize = 31.sp,
                 fontWeight = FontWeight.Black,
@@ -136,7 +136,7 @@ fun OnBoardingScreen3(navController: NavController) {
 
             ChuckyQuote(
                 doodle = "☠️  ✕",
-                quote = "“Fucking Andy!”",
+                quote = "“Andy Always Ruining Everything!”",
                 label = "— CHUCKY, LOSING HIS PATIENCE"
             )
 
